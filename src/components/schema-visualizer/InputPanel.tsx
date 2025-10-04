@@ -59,7 +59,7 @@ export function InputPanel({
             variant="ghost"
             size="sm"
             onClick={() => onPanelStateChange(PanelState.HIDDEN)}
-            className="h-7 w-7 p-0 hover:bg-accent/50 transition-all duration-200 ease-out hover:scale-110 active:scale-95 rounded-md transform-gpu"
+            className="h-7 w-7 p-0 hover:bg-accent/50 transition-all duration-200 ease-out hover:scale-110 active:scale-95 rounded-md transform-gpu lg:block hidden"
             title="Hide panel"
           >
             <X className="h-3.5 w-3.5 transition-all duration-200 ease-out hover:rotate-90" />

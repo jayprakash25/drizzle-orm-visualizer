@@ -50,14 +50,28 @@ export function parseDrizzleSchema(schemaCode: string): ParseResult {
       };
     }
 
-    // @ts-expect-error - acorn-typescript has type compatibility issues
-    const ast = Parser.extend(tsPlugin()).parse(cleanedCode, {
-      sourceType: 'module',
-      ecmaVersion: 'latest',
-      locations: true,
-      allowImportExportEverywhere: true,
-      allowReturnOutsideFunction: true
-    }) as Node;
+    // Check if the code looks like a Drizzle schema
+    if (!cleanedCode.includes('pgTable') && !cleanedCode.includes('mysqlTable') && !cleanedCode.includes('sqliteTable')) {
+      return {
+        success: false,
+        error: 'No Drizzle table definitions found. Make sure you have pgTable(), mysqlTable(), or sqliteTable() calls.'
+      };
+    }
+
+    let ast: Node;
+    try {
+      // @ts-expect-error - acorn-typescript has type compatibility issues
+      ast = Parser.extend(tsPlugin()).parse(cleanedCode, {
+        sourceType: 'module',
+        ecmaVersion: 'latest',
+        locations: true,
+        allowImportExportEverywhere: true,
+        allowReturnOutsideFunction: true
+      }) as Node;
+    } catch (parseError) {
+      console.warn('AST parsing failed, trying fallback parser:', parseError);
+      return parseDrizzleSchemaFallback(schemaCode);
+    }
 
     const tables: ParsedTable[] = [];
     const relationships: ParsedRelationship[] = [];
@@ -188,10 +202,15 @@ export function parseDrizzleSchema(schemaCode: string): ParseResult {
     };
   } catch (error) {
     console.error('Error parsing Drizzle schema:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown parsing error'
-    };
+    // Try fallback parser as last resort
+    try {
+      return parseDrizzleSchemaFallback(schemaCode);
+    } catch {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown parsing error'
+      };
+    }
   }
 }
 

@@ -11,12 +11,15 @@ export default function Page() {
       </div>
       <section className="max-w-2xl text-center space-y-8">
         <h1 className="text-pretty text-3xl md:text-5xl font-semibold tracking-tight">
-          Map your Drizzle ORM schema—instantly.
+          Visualize your database schema—instantly.
         </h1>
+        <p className="text-lg text-muted-foreground">
+          Beautiful, interactive diagrams for Drizzle and Prisma ORM
+        </p>
 
         <div className="flex items-center justify-center">
           <CtaButton href="/visualizer" ariaLabel="Go to the schema visualizer">
-            Begin mapping
+            Start visualizing
           </CtaButton>
         </div>
       </section>

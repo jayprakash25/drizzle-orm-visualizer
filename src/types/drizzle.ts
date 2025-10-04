@@ -1,5 +1,7 @@
-// Consolidated types for Drizzle ORM parsing and visualization
-// Following SSOT (Single Source of Truth) principle
+
+
+// ORM Type
+export type OrmType = 'drizzle' | 'prisma';
 
 export interface ParsedColumn {
   name: string;
@@ -77,11 +79,6 @@ export enum SchemaValidationStatus {
 export interface DrizzleFlowVisualizationProps {
   tables: ParsedTable[];
   relationships: ParsedRelationship[];
-  className?: string;
-}
-
-export interface DrizzleSchemaInputProps {
-  onSchemaChange: (result: ParseResult) => void;
   className?: string;
 }
 
