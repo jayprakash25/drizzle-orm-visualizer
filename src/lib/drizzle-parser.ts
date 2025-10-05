@@ -117,8 +117,18 @@ export function parseDrizzleSchema(schemaCode: string): ParseResult {
           declaration.init &&
           isCallExpression(declaration.init)
         ) {
-          // Handle direct pgTable calls
-          if (isIdentifier(declaration.init.callee) && ['pgTable', 'pgTableCreator'].includes(declaration.init.callee.name)) {
+          // Handle direct pg/sqlite/mysql table calls 
+          if (
+            isIdentifier(declaration.init.callee) &&
+            [
+              'pgTable',
+              'pgTableCreator',
+              'sqliteTable',
+              'sqliteTableCreator',
+              'mysqlTable',
+              'mysqlTableCreator',
+            ].includes(declaration.init.callee.name)
+          ) {
             const table = parseTableFromAST(declaration, tables.length, sharedSchemas);
             if (table) {
               tables.push(table);
@@ -386,12 +396,12 @@ function parseTableFromAST(declaration: VariableDeclarator, tableIndex: number, 
     let tableNameNode: Node | null = null;
     let columnsNode: Node | null = null;
     
-    // Handle pgTable('name', { columns }) or schema.table('name', { columns })
+    // Handle xTable('name', { columns }) or schema.table('name', { columns })
     if (callExpression.arguments.length >= 2) {
       tableNameNode = callExpression.arguments[0];
       columnsNode = callExpression.arguments[1];
     }
-    // Handle pgTableCreator(schema)('name', { columns })
+    // Handle xTableCreator(schema)('name', { columns })
     else if (callExpression.arguments.length === 1 && isCallExpression(callExpression.callee)) {
       const innerCall = callExpression.callee;
       if (innerCall.arguments.length >= 2) {
@@ -505,6 +515,7 @@ function parseColumnFromAST(prop: Property): ParsedColumn | null {
       'pgEnum': 'enum',
       'point': 'point',
       'real': 'real',
+      'blob': 'blob',
       'serial': 'serial',
       'smallint': 'smallint',
       'smallserial': 'smallserial',
@@ -622,8 +633,8 @@ export function parseDrizzleSchemaFallback(schemaCode: string): ParseResult {
       enums.push({ name: enumName, values });
     }
     
-    // Match table definitions - support both pgTable and pgTableCreator
-    const tableRegex = /export const (\w+) = (?:pgTable|pgTableCreator(?:\([^)]+\))?)\('(\w+)',\s*{([^}]+)}/gs;
+    // Match table definitions - support pg/sqlite/mysql and their *TableCreator variants
+    const tableRegex = /export const (\w+) = (?:(?:pg|sqlite|mysql)Table|(?:pg|sqlite|mysql)TableCreator(?:\([^)]+\))?)\('(\w+)',\s*{([^}]+)}/gs;
     let tableMatch;
 
     while ((tableMatch = tableRegex.exec(schemaCode)) !== null) {
